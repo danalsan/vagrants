@@ -1,0 +1,19 @@
+Vagrant.configure(2) do |config|
+
+    vm_memory = ENV['VM_MEMORY'] || '300'
+    vm_cpus = ENV['VM_CPUS'] || '1'
+
+    config.ssh.forward_agent = true
+    config.vm.hostname = "ovnhost"
+    config.vm.network "private_network", ip: "192.168.50.10"
+    config.vm.box = "centos/7"
+    config.vm.synced_folder './', '/vagrant', type: 'rsync'
+
+    config.vm.provider 'libvirt' do |lb|
+        lb.nested = true
+        lb.memory = vm_memory
+        lb.cpus = vm_cpus
+        lb.suspend_mode = 'managedsave'
+    end
+
+end
