@@ -16,4 +16,9 @@ Vagrant.configure(2) do |config|
         lb.suspend_mode = 'managedsave'
     end
 
+    config.vm.provision :shell do |shell|
+        shell.privileged = true
+        shell.path = 'install_ovn.sh'
+    end
+
 end
