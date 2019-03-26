@@ -8,11 +8,15 @@ function install_ovs {
     GIT_REPO=${GIT_REPO:-https://github.com/openvswitch/ovs}
     GIT_BRANCH=${GIT_BRANCH:-master}
 
-    git clone $GIT_REPO
-    cd ovs
+    if [ ! -d /home/vagrant/ovs ]; then
+        git clone $GIT_REPO
+        cd ovs
 
-    if [[ "z$GIT_BRANCH" != "z" ]]; then
-        git checkout $GIT_BRANCH
+        if [[ "z$GIT_BRANCH" != "z" ]]; then
+            git checkout $GIT_BRANCH
+        fi
+    else
+        cd ovs
     fi
 
     ./boot.sh
