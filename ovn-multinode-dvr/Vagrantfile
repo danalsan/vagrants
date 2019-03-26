@@ -29,6 +29,7 @@ Vagrant.configure(2) do |config|
     config.vm.hostname = "ovnhost"
     config.vm.box = "centos/7"
     config.vm.synced_folder './', '/vagrant', type: 'rsync'
+    config.vm.synced_folder '../utils', '/vagrant/utils', type: 'rsync'
 
      # central as controller node (northd/southd)
     config.vm.define 'central' do |central|
