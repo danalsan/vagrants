@@ -1,28 +1,8 @@
-sudo setenforce 0
+source /vagrant/utils/common-functions
 
-sudo sed -i 's/^SELINUX=.*/SELINUX=permissive/g' /etc/selinux/config
-
-sudo yum group install "Development Tools" -y
-sudo yum install python-devel python-six -y
-
-GIT_REPO=${GIT_REPO:-https://github.com/openvswitch/ovs}
-GIT_BRANCH=${GIT_BRANCH:-master}
-
-git clone $GIT_REPO
-cd ovs
-
-
-if [[ "z$GIT_BRANCH" != "z" ]]; then
-    git checkout $GIT_BRANCH
-fi
-
-./boot.sh
-CFLAGS="-O0 -g" ./configure --prefix=/usr
-make -j5 V=0 install
-sudo make install
+install_ovs
 
 hostname=$(hostname)
-ip=${!hostname}
 
 sudo /usr/share/openvswitch/scripts/ovs-ctl start --system-id=$hostname
 sudo /usr/share/openvswitch/scripts/ovn-ctl start_ovsdb --db-nb-create-insecure-remote=yes --db-sb-create-insecure-remote=yes
