@@ -1,9 +1,12 @@
 function install_ovs {
-    sudo setenforce 0
-    sudo sed -i 's/^SELINUX=.*/SELINUX=permissive/g' /etc/selinux/config
+    setenforce 0
+    sed -i 's/^SELINUX=.*/SELINUX=permissive/g' /etc/selinux/config
 
-    sudo yum group install "Development Tools" -y
-    sudo yum install python-devel python-six -y
+    yum group install "Development Tools" -y
+    yum install python-devel python-six -y
+    yum install net-tools tcpdump -y
+    yum install epel-release -y
+    yum install bmon -y
 
     GIT_REPO=${GIT_REPO:-https://github.com/openvswitch/ovs}
     GIT_BRANCH=${GIT_BRANCH:-master}
@@ -22,5 +25,20 @@ function install_ovs {
     ./boot.sh
     CFLAGS="-O0 -g" ./configure --prefix=/usr
     make -j5 V=0 install
-    sudo make install
+    make install
+}
+
+function ovn_add_phys_port {
+    name=$1
+    mac=$2
+    ip=$3
+    mask=$4
+    gw=$5
+    ovs-vsctl add-port br-int $name -- set Interface $name type=internal -- set Interface $name external_ids:iface-id=$name
+    ip netns add $name
+    ip link set $name netns $name
+    ip netns exec $name ip link set $name address $mac
+    ip netns exec $name ip addr add $ip/$mask dev $name
+    ip netns exec $name ip link set $name up
+    ip netns exec $name ip route add default via $gw
 }
