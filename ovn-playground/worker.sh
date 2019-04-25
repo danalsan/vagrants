@@ -23,6 +23,8 @@ ovs-vsctl set open . external-ids:ovn-bridge-mappings=external:br-ex
 # Add eth2 to br-ex
 ovs-vsctl add-port br-ex eth2
 
+sleep 3
+
 # Add fake VMs
 case "$HOSTNAME" in
     worker1)

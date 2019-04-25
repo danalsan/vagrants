@@ -15,4 +15,6 @@ ovs-vsctl set open . external-ids:ovn-remote=unix:/usr/var/run/openvswitch/ovnsb
 ovs-vsctl set open . external-ids:ovn-encap-ip=127.0.0.1
 ovs-vsctl set open . external-ids:ovn-encap-type=geneve
 
+sleep 3
+
 /bin/bash /vagrant/create_ovn_resources.sh
