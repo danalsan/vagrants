@@ -8,18 +8,18 @@ function install_ovs {
     yum install epel-release -y
     yum install bmon -y
 
-    GIT_REPO=${GIT_REPO:-https://github.com/openvswitch/ovs}
+    GIT_REPO=${GIT_REPO:-https://github.com/ovn-org/ovn}
     GIT_BRANCH=${GIT_BRANCH:-master}
 
     if [ ! -d /home/vagrant/ovs ]; then
         git clone $GIT_REPO
-        cd ovs
+        cd ovn
 
         if [[ "z$GIT_BRANCH" != "z" ]]; then
             git checkout $GIT_BRANCH
         fi
     else
-        cd ovs
+        cd ovn
     fi
 
     ./boot.sh
