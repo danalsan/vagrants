@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 source /vagrant/utils/common-functions
 
@@ -17,4 +17,4 @@ ovs-vsctl set open . external-ids:ovn-encap-type=geneve
 
 sleep 3
 
-/bin/bash /vagrant/create_ovn_resources.sh
+/vagrant/create_ovn_resources.sh

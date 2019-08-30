@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 ovn-nbctl ls-add network1
 ovn-nbctl lsp-add network1 vm1
