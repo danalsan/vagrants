@@ -8,11 +8,36 @@ function install_ovs {
     yum install epel-release -y
     yum install bmon -y
 
+    OVS_GIT_REPO=${OVS_GIT_REPO:-https://github.com/openvswitch/ovs}
+    OVS_GIT_BRANCH=${OVS_GIT_BRANCH:-master}
+
+    cd
+    if [ ! -d ./ovs ]; then
+        git clone --depth 1 --no-single-branch $OVS_GIT_REPO
+        cd ovs
+
+        if [[ "z$OVS_GIT_BRANCH" != "z" ]]; then
+            git checkout $OVS_GIT_BRANCH
+        fi
+    else
+        cd ovs
+    fi
+
+    ./boot.sh
+    CFLAGS="-O0 -g" ./configure --prefix=/usr
+    make -j$(($(nproc) + 1)) V=0
+    make install
+}
+
+function install_ovn {
+    install_ovs
+
     GIT_REPO=${GIT_REPO:-https://github.com/ovn-org/ovn}
     GIT_BRANCH=${GIT_BRANCH:-master}
 
-    if [ ! -d /home/vagrant/ovs ]; then
-        git clone $GIT_REPO
+    cd
+    if [ ! -d ./ovn ]; then
+        git clone --depth 1 --no-single-branch $GIT_REPO
         cd ovn
 
         if [[ "z$GIT_BRANCH" != "z" ]]; then
@@ -23,8 +48,8 @@ function install_ovs {
     fi
 
     ./boot.sh
-    CFLAGS="-O0 -g" ./configure --prefix=/usr
-    make -j5 V=0  ; # no need to be sudo for this...
+    CFLAGS="-O0 -g" ./configure --prefix=/usr --with-ovs-source=${HOME}/ovs
+    make -j$(($(nproc) + 1)) V=0
     make install
 }
 
