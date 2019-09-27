@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 source /vagrant/utils/common-functions
 
@@ -11,7 +11,7 @@ ip=${!hostname}
 /usr/share/openvswitch/scripts/ovn-ctl start_controller
 
 ovs-vsctl set open . external-ids:ovn-bridge=br-int
-ovs-vsctl set open . external-ids:ovn-remote=tcp:192.168.50.10:6642
+ovs-vsctl set open . external-ids:ovn-remote=tcp:${central}:6642
 ovs-vsctl set open . external-ids:ovn-encap-type=geneve
 ovs-vsctl set open . external-ids:ovn-encap-ip=$ip
 
