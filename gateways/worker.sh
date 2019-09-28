@@ -2,13 +2,13 @@
 
 source /vagrant/utils/common-functions
 
-install_ovs
+install_ovn
 
 hostname=$(hostname)
 ip=${!hostname}
 
 /usr/share/openvswitch/scripts/ovs-ctl start --system-id=$hostname
-/usr/share/openvswitch/scripts/ovn-ctl start_controller
+/usr/share/ovn/scripts/ovn-ctl start_controller
 
 ovs-vsctl set open . external-ids:ovn-bridge=br-int
 ovs-vsctl set open . external-ids:ovn-remote=tcp:${central}:6642
