@@ -3,7 +3,8 @@ function install_ovs {
     sed -i 's/^SELINUX=.*/SELINUX=permissive/g' /etc/selinux/config
 
     yum group install "Development Tools" -y
-    yum install python-devel python-six -y
+    yum install python3 python3-devel python3-pip -y
+    pip3 install six
     yum install net-tools tcpdump -y
     yum install epel-release -y
     yum install bmon -y
