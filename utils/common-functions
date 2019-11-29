@@ -3,9 +3,9 @@ function install_ovs {
     sed -i 's/^SELINUX=.*/SELINUX=permissive/g' /etc/selinux/config
 
     yum group install "Development Tools" -y
-    yum install python-devel python-six -y
     yum install net-tools tcpdump -y
     yum install epel-release -y
+    yum install python3-devel python-six openssl-devel python36-six -y
     yum install bmon -y
 
     OVS_GIT_REPO=${OVS_GIT_REPO:-https://github.com/openvswitch/ovs}
