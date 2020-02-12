@@ -1,0 +1,121 @@
+IPS = {central_east:   '192.168.50.10',
+       central_west:   '192.168.50.30',
+       central_ic:     '192.168.50.20',
+       worker_east:    '192.168.50.100',
+       worker_east_2:  '172.24.4.10',
+       worker_west:    '192.168.50.101',
+       worker_west_2:  '172.24.4.11',
+       gw_east:        '192.168.50.102',
+       gw_east_2:      '172.24.4.12',
+       gw_west:        '192.168.50.103',
+       gw_west_2:      '172.24.4.13',
+      }
+
+RAM = 300 
+VCPUS = 2
+
+Vagrant.configure(2) do |config|
+
+    vm_memory = ENV['VM_MEMORY'] || RAM
+    vm_cpus = ENV['VM_CPUS'] || VCPUS
+
+    config.vm.provider 'libvirt' do |lb|
+        lb.nested = true
+        lb.memory = vm_memory
+        lb.cpus = vm_cpus
+        lb.suspend_mode = 'managedsave'
+        lb.storage_pool_name = 'images'
+    end
+
+    config.ssh.forward_agent = true
+    config.vm.hostname = "ovnhost"
+    config.vm.box = "centos/7"
+    config.vm.synced_folder './', '/vagrant', type: 'rsync'
+    config.vm.synced_folder '../utils', '/vagrant/utils', type: 'rsync'
+
+    if ENV['OVS_DIR']
+        config.vm.synced_folder ENV['OVS_DIR'], '/home/vagrant/ovs', type: 'rsync'
+    end
+
+    # central_east as controller node for east zone
+    config.vm.define 'central_east' do |central_east|
+        central_east.vm.network 'private_network', ip: IPS[:central_east]
+        central_east.vm.hostname = 'central-east'
+        central_east.vm.provision :shell do |shell|
+            shell.privileged = true
+            shell.path = 'central.sh'
+            shell.env = IPS
+        end
+    end
+
+    # central_west as controller node for west zone
+    config.vm.define 'central_west' do |central_west|
+        central_west.vm.network 'private_network', ip: IPS[:central_west]
+        central_west.vm.hostname = 'central-west'
+        central_west.vm.provision :shell do |shell|
+            shell.privileged = true
+            shell.path = 'central.sh'
+            shell.env = IPS
+        end
+    end
+
+    # central_ic to run just the interconnection databases
+    config.vm.define 'central_ic' do |central_ic|
+        central_ic.vm.network 'private_network', ip: IPS[:central_ic]
+        central_ic.vm.hostname = 'central-ic'
+        central_ic.vm.provision :shell do |shell|
+            shell.privileged = true
+            shell.path = 'central.sh'
+            shell.env = IPS
+        end
+    end
+
+    config.vm.define 'worker_east' do |worker_east|
+        worker_east.vm.network 'private_network', ip: IPS[:worker_east]
+        worker_east.vm.network 'private_network', ip: IPS[:worker_east_2]
+        worker_east.vm.hostname = 'worker-east'
+        worker_east.vm.provision :shell do |shell|
+            shell.privileged = true
+            shell.path = 'worker.sh'
+            shell.env = IPS
+            shell.args = IPS[:central_east]
+        end
+    end
+
+    config.vm.define 'worker_west' do |worker_west|
+        worker_west.vm.network 'private_network', ip: IPS[:worker_west]
+        worker_west.vm.network 'private_network', ip: IPS[:worker_west_2]
+        worker_west.vm.hostname = 'worker-west'
+        worker_west.vm.provision :shell do |shell|
+            shell.privileged = true
+            shell.path = 'worker.sh'
+            shell.env = IPS
+            shell.args = IPS[:central_west]
+        end
+    end
+
+    config.vm.define 'gw_east' do |gw_east|
+        gw_east.vm.network 'private_network', ip: IPS[:gw_east]
+        gw_east.vm.network 'private_network', ip: IPS[:gw_east_2]
+        gw_east.vm.hostname = 'gw-east'
+        gw_east.vm.provision :shell do |shell|
+            shell.privileged = true
+            shell.path = 'gateway.sh'
+            shell.env = IPS 
+            shell.args = IPS[:central_east]
+        end
+    end
+
+    config.vm.define 'gw_west' do |gw_west|
+        gw_west.vm.network 'private_network', ip: IPS[:gw_west]
+        gw_west.vm.network 'private_network', ip: IPS[:gw_west_2]
+        gw_west.vm.hostname = 'gw-west'
+        gw_west.vm.provision :shell do |shell|
+            shell.privileged = true
+            shell.path = 'gateway.sh'
+            shell.env = IPS
+            shell.args = IPS[:central_west]
+        end
+    end
+
+end
