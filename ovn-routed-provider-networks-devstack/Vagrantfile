@@ -1,0 +1,132 @@
+IPS = {central:   '192.168.50.10',
+       worker1:   '192.168.50.100',
+       worker1_2: '172.24.4.10',
+       worker2:   '192.168.50.101',
+       worker2_2: '172.24.6.10',
+       worker3:   '192.168.50.102',
+       worker3_2: '172.24.4.11',
+       host1:     '172.24.4.14',
+       host2:     '172.24.6.14',
+      }
+
+RAM = 300
+VCPUS = 2
+
+Vagrant.configure(2) do |config|
+
+    vm_memory = ENV['VM_MEMORY'] || RAM
+    vm_cpus = ENV['VM_CPUS'] || VCPUS
+
+
+    config.ssh.forward_agent = true
+    config.vm.hostname = "ovnhost"
+    config.vm.box = "generic/ubuntu1804"
+    config.vm.synced_folder './', '/vagrant', type: 'rsync'
+    config.vm.synced_folder '../utils', '/vagrant/utils', type: 'rsync'
+
+    # central as controller node (northd/southd)
+    config.vm.define 'central' do |central|
+        central.vm.network 'private_network', ip: IPS[:central]
+        central.vm.hostname = 'central'
+        central.vm.provider 'libvirt' do |lb|
+            lb.nested = true
+            lb.memory = 4096
+            lb.cpus = 4
+            lb.suspend_mode = 'managedsave'
+        end
+        central.vm.provision :shell do |shell|
+            shell.privileged = false
+            shell.path = 'central.sh'
+            shell.env = IPS
+        end
+    end
+
+    # openstack compute connected to segment-1
+    config.vm.define 'worker1' do |worker1|
+        worker1.vm.network 'private_network', ip: IPS[:worker1]
+        worker1.vm.network 'private_network', ip: IPS[:worker1_2]
+        worker1.vm.hostname = 'worker1'
+        worker1.vm.provider 'libvirt' do |lb|
+            lb.nested = true
+            lb.memory = 1024
+            lb.cpus = 4
+            lb.suspend_mode = 'managedsave'
+        end
+        worker1.vm.provision :shell do |shell|
+            shell.privileged = false
+            shell.path = 'worker-1.sh'
+            shell.env = IPS
+        end
+    end
+
+    # openstack compute connected to segment-2
+    config.vm.define 'worker2' do |worker2|
+        worker2.vm.network 'private_network', ip: IPS[:worker2]
+        worker2.vm.network 'private_network', ip: IPS[:worker2_2]
+        worker2.vm.hostname = 'worker2'
+        worker2.vm.provider 'libvirt' do |lb|
+            lb.nested = true
+            lb.memory = 1024
+            lb.cpus = 4
+            lb.suspend_mode = 'managedsave'
+        end
+        worker2.vm.provision :shell do |shell|
+            shell.privileged = false
+            shell.path = 'worker-2.sh'
+            shell.env = IPS
+        end
+    end
+
+    # openstack compute connected to segment-2
+    config.vm.define 'worker3' do |worker3|
+        worker3.vm.network 'private_network', ip: IPS[:worker3]
+        worker3.vm.network 'private_network', ip: IPS[:worker3_2]
+        worker3.vm.hostname = 'worker3'
+        worker3.vm.provider 'libvirt' do |lb|
+            lb.nested = true
+            lb.memory = 1024
+            lb.cpus = 4
+            lb.suspend_mode = 'managedsave'
+        end
+        worker3.vm.provision :shell do |shell|
+            shell.privileged = false
+            shell.path = 'worker-3.sh'
+            shell.env = IPS
+        end
+    end
+
+    # host that is connected to segment-1
+    config.vm.define 'host1' do |host1|
+        host1.vm.network 'private_network', ip: IPS[:host1]
+        host1.vm.hostname = 'host1'
+        host1.vm.provider 'libvirt' do |lb|
+            lb.nested = true
+            lb.memory = 300
+            lb.cpus = 1
+            lb.suspend_mode = 'managedsave'
+        end
+        host1.vm.provision :shell do |shell|
+            shell.privileged = false
+            shell.path = 'host-1.sh'
+            shell.env = IPS
+        end
+    end
+
+    # host that is connected to segment-2
+    config.vm.define 'host2' do |host2|
+        host2.vm.network 'private_network', ip: IPS[:host2]
+        host2.vm.hostname = 'host2'
+        host2.vm.provider 'libvirt' do |lb|
+            lb.nested = true
+            lb.memory = 300
+            lb.cpus = 1
+            lb.suspend_mode = 'managedsave'
+        end
+        host2.vm.provision :shell do |shell|
+            shell.privileged = false
+            shell.path = 'host-2.sh'
+            shell.env = IPS
+        end
+    end
+
+end

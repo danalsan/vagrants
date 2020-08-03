@@ -67,3 +67,28 @@ function ovn_add_phys_port {
     ip netns exec $name ip link set $name up
     ip netns exec $name ip route add default via $gw
 }
+
+function install_devstack {
+    local type=$1
+    local service_ip=$2
+
+    git clone http://git.openstack.org/openstack-dev/devstack.git ~/devstack
+    git clone http://git.openstack.org/openstack/neutron.git ~/neutron
+
+    if [[ "${type}" == "master" ]]; then
+       cp /home/vagrant/neutron/devstack/ovn-local.conf.sample /home/vagrant/devstack/local.conf
+    else
+       hostname=$(hostname)
+       ip=${!hostname}
+       cp /home/vagrant/neutron/devstack/ovn-compute-local.conf.sample /home/vagrant/devstack/local.conf
+       sed -i 's/SERVICE_HOST=.*/SERVICE_HOST='${service_ip}'/' /home/vagrant/devstack/local.conf
+       sed -i 's/HOST_IP=.*/HOST_IP='${ip}'/' /home/vagrant/devstack/local.conf
+    fi
+    cd /home/vagrant/devstack
+    sed -i '/STACK_USER=.*/d' /home/vagrant/devstack/local.conf
+    sed -i '/DEST=.*/d' /home/vagrant/devstack/local.conf
+    sed -i '/ADMIN_PASSWORD.*/a DEST=/home/vagrant' /home/vagrant/devstack/local.conf
+    sed -i '/DEST=.*/a STACK_USER=vagrant' /home/vagrant/devstack/local.conf
+    sed -i '/DEST=.*/a enable_service neutron-segments' /home/vagrant/devstack/local.conf
+    ./stack.sh
+}
