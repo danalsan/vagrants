@@ -1,0 +1,103 @@
+IPS = {central:   '192.168.150.10',
+       worker1:   '192.168.150.100',
+       worker1_2: '172.24.14.10',
+       worker2:   '192.168.150.101',
+       worker2_2: '172.24.14.11',
+       gw1:       '192.168.150.102',
+       gw1_2:     '172.24.14.12',
+       gw2:       '192.168.150.103',
+       gw2_2:     '172.24.14.13',
+       host1:     '172.24.14.14',
+      }
+
+RAM = 300
+VCPUS = 2
+
+Vagrant.configure(2) do |config|
+
+    vm_memory = ENV['VM_MEMORY'] || RAM
+    vm_cpus = ENV['VM_CPUS'] || VCPUS
+
+    config.vm.provider 'libvirt' do |lb|
+        lb.nested = true
+        lb.memory = vm_memory
+        lb.cpus = vm_cpus
+        lb.suspend_mode = 'managedsave'
+        lb.storage_pool_name = 'images'
+    end
+
+    config.ssh.forward_agent = true
+    config.vm.hostname = "ovnhost"
+    config.vm.box = "centos/7"
+    config.vm.synced_folder './', '/vagrant', type: 'rsync'
+    config.vm.synced_folder '../utils', '/vagrant/utils', type: 'rsync'
+
+    if ENV['OVS_DIR']
+        config.vm.synced_folder ENV['OVS_DIR'], '/home/vagrant/ovs', type: 'rsync'
+    end
+
+     # central as controller node (northd/southd)
+    config.vm.define 'central' do |central|
+        central.vm.network 'private_network', ip: IPS[:central]
+        central.vm.hostname = 'central'
+        central.vm.provision :shell do |shell|
+            shell.privileged = true
+            shell.path = 'central.sh'
+            shell.env = IPS
+        end
+    end
+
+    config.vm.define 'worker1' do |worker1|
+        worker1.vm.network 'private_network', ip: IPS[:worker1]
+        worker1.vm.network 'private_network', ip: IPS[:worker1_2]
+        worker1.vm.hostname = 'worker1'
+        worker1.vm.provision :shell do |shell|
+            shell.privileged = true
+            shell.path = 'worker.sh'
+            shell.env = IPS
+        end
+    end
+
+    config.vm.define 'worker2' do |worker2|
+        worker2.vm.network 'private_network', ip: IPS[:worker2]
+        worker2.vm.network 'private_network', ip: IPS[:worker2_2]
+        worker2.vm.hostname = 'worker2'
+        worker2.vm.provision :shell do |shell|
+            shell.privileged = true
+            shell.path = 'worker.sh'
+            shell.env = IPS
+        end
+    end
+
+    config.vm.define 'gw1' do |gw1|
+        gw1.vm.network 'private_network', ip: IPS[:gw1]
+        gw1.vm.network 'private_network', ip: IPS[:gw1_2]
+        gw1.vm.hostname = 'gw1'
+        gw1.vm.provision :shell do |shell|
+            shell.privileged = true
+            shell.path = 'gateway.sh'
+            shell.env = IPS
+        end
+    end
+
+    config.vm.define 'gw2' do |gw2|
+        gw2.vm.network 'private_network', ip: IPS[:gw2]
+        gw2.vm.network 'private_network', ip: IPS[:gw2_2]
+        gw2.vm.hostname = 'gw2'
+        gw2.vm.provision :shell do |shell|
+            shell.privileged = true
+            shell.path = 'gateway.sh'
+            shell.env = IPS
+        end
+    end
+
+    config.vm.define 'host1' do |host1|
+        host1.vm.network 'private_network', ip: IPS[:host1]
+        host1.vm.hostname = 'host1'
+        host1.vm.provision :shell do |shell|
+            shell.privileged = true
+            shell.path = 'host.sh'
+        end
+    end
+
+end
