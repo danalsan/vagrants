@@ -1,13 +1,16 @@
+function centos_setup {
+    sudo setenforce 0
+    sudo sed -i 's/^SELINUX=.*/SELINUX=permissive/g' /etc/selinux/config
+
+    sudo yum group install "Development Tools" -y
+    sudo yum install net-tools tcpdump -y
+    sudo yum install epel-release -y
+    sudo yum install python3-devel python-six openssl-devel python36-six -y
+    sudo yum install kernel-devel
+    sudo yum install bmon -y
+}
+
 function install_ovs {
-    setenforce 0
-    sed -i 's/^SELINUX=.*/SELINUX=permissive/g' /etc/selinux/config
-
-    yum group install "Development Tools" -y
-    yum install net-tools tcpdump -y
-    yum install epel-release -y
-    yum install python3-devel python-six openssl-devel python36-six -y
-    yum install bmon -y
-
     OVS_GIT_REPO=${OVS_GIT_REPO:-https://github.com/openvswitch/ovs}
     OVS_GIT_BRANCH=${OVS_GIT_BRANCH:-master}
 
@@ -72,8 +75,14 @@ function install_devstack {
     local type=$1
     local service_ip=$2
 
+    centos_setup
+
     git clone http://git.openstack.org/openstack-dev/devstack.git ~/devstack
     git clone http://git.openstack.org/openstack/neutron.git ~/neutron
+
+    pushd ~/devstack
+    git fetch https://review.opendev.org/openstack/devstack refs/changes/54/755554/1 && git checkout FETCH_HEAD
+    popd
 
     if [[ "${type}" == "master" ]]; then
        cp /home/vagrant/neutron/devstack/ovn-local.conf.sample /home/vagrant/devstack/local.conf
@@ -86,9 +95,7 @@ function install_devstack {
     fi
     cd /home/vagrant/devstack
     sed -i '/STACK_USER=.*/d' /home/vagrant/devstack/local.conf
-    sed -i '/DEST=.*/d' /home/vagrant/devstack/local.conf
-    sed -i '/ADMIN_PASSWORD.*/a DEST=/home/vagrant' /home/vagrant/devstack/local.conf
-    sed -i '/DEST=.*/a STACK_USER=vagrant' /home/vagrant/devstack/local.conf
-    sed -i '/DEST=.*/a enable_service neutron-segments' /home/vagrant/devstack/local.conf
+    sed -i '/ADMIN_PASSWORD.*/a STACK_USER=vagrant' /home/vagrant/devstack/local.conf
+    sed -i 's/OVN_BUILD_MODULES=.*/OVN_BUILD_MODULES=False/' /home/vagrant/devstack/local.conf
     ./stack.sh
 }
