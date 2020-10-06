@@ -19,24 +19,32 @@ To prepare this environment You need to have installed:
 
 ## Installation
 
-* Clone this repo
+* Clone this repo:
 
-    $ git clone https://github.com/danalsan/vagrants.git
+```
+$ git clone https://github.com/danalsan/vagrants.git
+```
 
-* Enter to the workshop directory
+* Enter to the workshop directory:
 
-    $ cd vagrants/devstack-workshop
+```
+$ cd vagrants/devstack-workshop
+```
 
-* Run vagrant
+* Run vagrant:
 
-    $ vagrant up
+```
+$ vagrant up
+```
 
 * Once the configuration step is done you can SSH into the nodes and start
   playing with OVN:
 
-  $ vagrant status
-  $ vagrant ssh <target node>
-  $ sudo ovn-sbctl list Chassis
+```
+$ vagrant status
+$ vagrant ssh <target node>
+$ sudo ovn-sbctl list Chassis
+```
 
 As a <target node> You can choose "central" or "worker1" in case of this
 workshop.
@@ -47,13 +55,16 @@ workshop.
   libvirt. If You have pool with different name, please change in Vagrantfile
   line:
 
-    lb.storage_pool_name = 'images'
+```
+lb.storage_pool_name = 'images'
+```
 
 
 ## Lab topology
 
 This lab will spawn 2 VMs: "cental" and "worker1":
 
+```
 +------------------------+            +------------------------+
 |central                 |            |worker1                 |
 |                        | management |                        |
@@ -66,6 +77,7 @@ This lab will spawn 2 VMs: "cental" and "worker1":
 |                        |            |                        |
 |                        |            |                        |
 +------------------------+            +------------------------+
+```
 
 Node "central" is "all-in-one" type of node, with API services, like e.g.
 Nova-api and neutron-server but also nova-compute and OVN agents.
