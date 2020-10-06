@@ -77,8 +77,8 @@ function install_devstack {
 
     centos_setup
 
-    git clone http://git.openstack.org/openstack-dev/devstack.git ~/devstack
-    git clone http://git.openstack.org/openstack/neutron.git ~/neutron
+    git clone https://opendev.org/openstack/devstack.git ~/devstack
+    git clone https://opendev.org/openstack/neutron.git ~/neutron
 
     pushd ~/devstack
     git fetch https://review.opendev.org/openstack/devstack refs/changes/54/755554/1 && git checkout FETCH_HEAD
