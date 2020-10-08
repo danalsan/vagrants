@@ -17,7 +17,8 @@ Vagrant.configure(2) do |config|
         lb.memory = vm_memory
         lb.cpus = vm_cpus
         lb.suspend_mode = 'managedsave'
-        lb.storage_pool_name = 'images'
+        lb.storage_pool_name = 'default'
+        lb.qemu_use_session = false
     end
 
     config.ssh.forward_agent = true

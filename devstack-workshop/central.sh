@@ -5,6 +5,9 @@ source /vagrant/utils/common-functions
 
 hostname=$(hostname)
 
+# install vim
+sudo yum install -y vim
+
 install_devstack master
 
 sudo ovs-vsctl --may-exist add-br br-ex
@@ -39,7 +42,7 @@ openstack subnet create --network red red --subnet-range 10.0.0.0/24
 openstack subnet create --network blue blue --subnet-range 20.0.0.0/24
 
 openstack router create router_rb
-openstack router set router_rb --external-gateway public
+openstack router set router_rb --external-gateway public --fixed-ip ip-address=172.24.4.115
 openstack router add subnet router_rb red
 openstack router add subnet router_rb blue
 
@@ -48,13 +51,19 @@ IMAGE_ID=$(openstack image list -c ID -c Name -f value  | grep cirros | head -n1
 RED_NET=$(openstack network show red -c id -f value)
 BLUE_NET=$(openstack network show blue -c id -f value)
 
-openstack server create --flavor m1.tiny --image $IMAGE_ID --nic net-id=$RED_NET --security-group test --min 2 --max 2 red
-openstack server create --flavor m1.tiny --image $IMAGE_ID --nic net-id=$BLUE_NET --security-group test --min 2 --max 2 blue
 
-for n in $(seq 0 1); do
+for n in $(seq 1 2); do
+ echo creating server red-$n
+ port_red=$(openstack port create --network $RED_NET --fixed-ip ip-address=10.0.0.1$n --security-group test port-red-$n -c id -f value)
+ openstack server create --flavor m1.tiny --image $IMAGE_ID --nic port-id=$port_red red-$n
+
+ echo creating server blue-$n
+ port_blue=$(openstack port create --network $BLUE_NET --fixed-ip ip-address=20.0.0.1$n --security-group test port-blue-$n -c id -f value)
+ openstack server create --flavor m1.tiny --image $IMAGE_ID --nic port-id=$port_blue blue-$n
+
  echo creating FIP 172.24.4.13$n
  openstack floating ip create --floating-ip-address 172.24.4.13$n public
 done
 
-openstack server add floating ip red-1 172.24.4.130
-openstack server add floating ip blue-1 172.24.4.131
+openstack server add floating ip red-1 172.24.4.131
+openstack server add floating ip blue-1 172.24.4.132
