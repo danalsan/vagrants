@@ -4,6 +4,9 @@ set -x
 
 source /vagrant/utils/common-functions
 
+# install vim
+sudo yum install -y vim
+
 install_devstack slave ${central}
 
 sudo ovs-vsctl --may-exist add-br br-ex

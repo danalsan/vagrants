@@ -5,6 +5,9 @@ source /vagrant/utils/common-functions
 
 hostname=$(hostname)
 
+# install vim
+sudo yum install -y vim
+
 install_devstack master
 
 sudo ovs-vsctl --may-exist add-br br-ex
