@@ -2,6 +2,7 @@
 
 source /vagrant/utils/common-functions
 
+centos_setup
 install_ovn
 
 /usr/share/openvswitch/scripts/ovs-ctl start --system-id="ovn"
