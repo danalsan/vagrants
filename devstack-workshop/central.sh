@@ -10,6 +10,12 @@ sudo yum install -y vim
 
 install_devstack master
 
+sudo yum remove iptables-services
+
+source ~/devstack/openrc admin admin
+
+while ! openstack hypervisor list | grep  worker1 ; do sleep 2; done
+
 sudo ovs-vsctl --may-exist add-br br-ex
 sleep 3
 sudo ovs-vsctl br-set-external-id br-ex bridge-id br-ex
@@ -27,8 +33,6 @@ sudo ip addr add 172.24.4.3/24 dev br-ex
 sed -i '/ovn_nb_connection.*/a enable_distributed_floating_ip=True' /etc/neutron/plugins/ml2/ml2_conf.ini
 sudo systemctl restart devstack@q-svc
 sleep 10
-
-source ~/devstack/openrc admin admin
 
 openstack security group create test
 openstack security group rule create --ingress --protocol tcp --dst-port 22 test

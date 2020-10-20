@@ -75,6 +75,9 @@ function install_devstack {
     local type=$1
     local service_ip=$2
 
+    hostname=$(hostname)
+    ip=${!hostname}
+
     centos_setup
 
     git clone https://opendev.org/openstack/devstack.git ~/devstack
@@ -86,9 +89,8 @@ function install_devstack {
 
     if [[ "${type}" == "master" ]]; then
        cp /home/vagrant/neutron/devstack/ovn-local.conf.sample /home/vagrant/devstack/local.conf
+       sed -i '/ADMIN_PASSWORD.*/a HOST_IP='${ip}'' /home/vagrant/devstack/local.conf
     else
-       hostname=$(hostname)
-       ip=${!hostname}
        cp /home/vagrant/neutron/devstack/ovn-compute-local.conf.sample /home/vagrant/devstack/local.conf
        sed -i 's/SERVICE_HOST=.*/SERVICE_HOST='${service_ip}'/' /home/vagrant/devstack/local.conf
        sed -i 's/HOST_IP=.*/HOST_IP='${ip}'/' /home/vagrant/devstack/local.conf

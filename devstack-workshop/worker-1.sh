@@ -9,6 +9,8 @@ sudo yum install -y vim
 
 install_devstack slave ${central}
 
+sudo yum remove iptables-services
+
 sudo ovs-vsctl --may-exist add-br br-ex
 sleep 3
 sudo ovs-vsctl br-set-external-id br-ex bridge-id br-ex
