@@ -14,14 +14,14 @@ sudo ovs-vsctl --may-exist add-br br-ex
 sleep 3
 sudo ovs-vsctl br-set-external-id br-ex bridge-id br-ex
 sudo ovs-vsctl br-set-external-id br-int bridge-id br-int
-sudo ovs-vsctl set open . external-ids:ovn-bridge-mappings="central:br-ex"
+sudo ovs-vsctl set open . external-ids:ovn-bridge-mappings="public:br-ex"
 sudo ovs-vsctl set open . external-ids:ovn-cms-options="enable-chassis-as-gw"
 
 # Add eth2 to br-ex
 sudo ovs-vsctl add-port br-ex eth2
 sudo ip link set br-ex up
 sudo ip route add 172.24.4.0/24 dev br-ex
-sudo ip addr add 172.24.4.1/24 dev br-ex
+sudo ip addr add 172.24.4.3/24 dev br-ex
 
 # Enable DVR (unfortunately there's not support yet in Devstack)
 sed -i '/ovn_nb_connection.*/a enable_distributed_floating_ip=True' /etc/neutron/plugins/ml2/ml2_conf.ini
