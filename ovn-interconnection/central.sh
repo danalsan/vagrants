@@ -3,6 +3,7 @@
 
 source /vagrant/utils/common-functions
 
+centos_setup
 install_ovn
 
 hostname=$(hostname)

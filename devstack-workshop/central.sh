@@ -10,7 +10,7 @@ sudo yum install -y vim
 
 install_devstack master
 
-sudo yum remove iptables-services
+sudo yum remove -y iptables-services
 
 source ~/devstack/openrc admin admin
 

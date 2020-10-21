@@ -9,7 +9,7 @@ sudo yum install -y vim
 
 install_devstack slave ${central}
 
-sudo yum remove iptables-services
+sudo yum remove -y iptables-services
 
 sudo ovs-vsctl --may-exist add-br br-ex
 sleep 3
