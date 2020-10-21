@@ -56,18 +56,26 @@ RED_NET=$(openstack network show red -c id -f value)
 BLUE_NET=$(openstack network show blue -c id -f value)
 
 
-for n in $(seq 1 2); do
- echo creating server red-$n
- port_red=$(openstack port create --network $RED_NET --fixed-ip ip-address=10.0.0.1$n --security-group test port-red-$n -c id -f value)
- openstack server create --flavor m1.tiny --image $IMAGE_ID --nic port-id=$port_red red-$n
+echo creating server red-1
+port_red=$(openstack port create --network $RED_NET --fixed-ip ip-address=10.0.0.11 --security-group test port-red-1 -c id -f value)
+openstack server create --flavor m1.tiny --image $IMAGE_ID --nic port-id=$port_red --availability-zone nova:central red-1
 
- echo creating server blue-$n
- port_blue=$(openstack port create --network $BLUE_NET --fixed-ip ip-address=20.0.0.1$n --security-group test port-blue-$n -c id -f value)
- openstack server create --flavor m1.tiny --image $IMAGE_ID --nic port-id=$port_blue blue-$n
+echo creating server red-2
+port_red=$(openstack port create --network $RED_NET --fixed-ip ip-address=10.0.0.12 --security-group test port-red-2 -c id -f value)
+openstack server create --flavor m1.tiny --image $IMAGE_ID --nic port-id=$port_red --availability-zone nova:worker1 red-2
 
- echo creating FIP 172.24.4.13$n
- openstack floating ip create --floating-ip-address 172.24.4.13$n public
-done
+echo creating server blue-1
+port_blue=$(openstack port create --network $BLUE_NET --fixed-ip ip-address=20.0.0.11 --security-group test port-blue-1 -c id -f value)
+openstack server create --flavor m1.tiny --image $IMAGE_ID --nic port-id=$port_blue --availability-zone nova:worker1 blue-1
+
+echo creating server blue-2
+port_blue=$(openstack port create --network $BLUE_NET --fixed-ip ip-address=20.0.0.12 --security-group test port-blue-2 -c id -f value)
+openstack server create --flavor m1.tiny --image $IMAGE_ID --nic port-id=$port_blue --availability-zone nova:central blue-2
+
+echo creating FIP 172.24.4.131
+openstack floating ip create --floating-ip-address 172.24.4.131 public
+echo creating FIP 172.24.4.132
+openstack floating ip create --floating-ip-address 172.24.4.132 public
 
 openstack server add floating ip red-1 172.24.4.131
 openstack server add floating ip blue-1 172.24.4.132
