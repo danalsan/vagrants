@@ -1,0 +1,18 @@
+set tabstop=8
+set expandtab
+set shiftwidth=4
+set softtabstop=4
+set textwidth=79
+syntax on
+filetype on
+filetype plugin indent on
+set autoindent
+set nu
+set ruler
+execute pathogen#infect()
+autocmd FileType python set omnifunc=pythoncomplete#Complete
+let g:syntastic_auto_loc_list=1
+let g:syntastic_python_checkers=['flake8']
+let g:syntastic_quiet_messages = {"regex": "D10*"}
+set background=dark
+color gruvbox

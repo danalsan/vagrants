@@ -1,0 +1,4 @@
+
+# Enable history and command line editing
+set -o vi
+VISUAL=vim
