@@ -101,3 +101,54 @@ function install_devstack {
     sed -i 's/OVN_BUILD_MODULES=.*/OVN_BUILD_MODULES=False/' /home/vagrant/devstack/local.conf
     ./stack.sh
 }
+
+function ubuntu_setup {
+    DEBIAN_FRONTEND=noninteractive sudo apt-get purge -qqy python3-simplejson
+    DEBIAN_FRONTEND=noninteractive sudo apt-get purge -qqy python3-pyasn1-modules
+
+    cp /vagrant/files/vimrc /home/vagrant/.vimrc
+    cat /vagrant/files/bashrc >> /home/vagrant/.bashrc
+    mkdir -p ~/.vim/autoload ~/.vim/bundle
+    curl -LSso ~/.vim/autoload/pathogen.vim https://tpo.pe/pathogen.vim
+    sudo pip3 install flake8
+    git clone https://github.com/scrooloose/syntastic.git .vim/bundle/syntastic
+    git clone https://github.com/tmhedberg/SimpylFold .vim/bundle/SimpylFold
+    git clone https://github.com/Raimondi/delimitMate .vim/bundle/delimitMate
+    git clone https://github.com/morhetz/gruvbox .vim/bundle/gruvbox
+    git clone https://github.com/tpope/vim-fugitive .vim/bundle/vim-fugitive
+}
+
+function install_devstack_ubuntu {
+    local type=$1
+    local backend=$2
+    ip=$3
+    local service_ip=$4
+
+    ubuntu_setup
+
+    git clone https://opendev.org/openstack/devstack.git ~/devstack
+
+    if [[ "${type}" == "master" ]]; then
+       if [[ "${backend}" == "ovn" ]]; then
+          cp /opt/stack/neutron/devstack/ovn-local.conf.sample /home/vagrant/devstack/local.conf
+       else
+          cp /opt/stack/neutron/devstack/ml2-ovs-local.conf.sample /home/vagrant/devstack/local.conf
+       fi
+    else
+       if [[ "${backend}" == "ovn" ]]; then
+          cp /opt/stack/neutron/devstack/ovn-compute-local.conf.sample /home/vagrant/devstack/local.conf
+       else
+          cp /opt/stack/neutron/devstack/ml2-ovs-compute-local.conf.sample /home/vagrant/devstack/local.conf
+       fi
+       sed -i 's/SERVICE_HOST=.*/SERVICE_HOST='${service_ip}'/' /home/vagrant/devstack/local.conf
+    fi
+    cd /home/vagrant/devstack
+    sed -i '/STACK_USER=.*/d' /home/vagrant/devstack/local.conf
+    sed -i '/ADMIN_PASSWORD.*/a STACK_USER=vagrant' /home/vagrant/devstack/local.conf
+    sed -i '/^HOST_IP=.*/d' /home/vagrant/devstack/local.conf
+    sed -i '/ADMIN_PASSWORD.*/a HOST_IP='${ip}'' /home/vagrant/devstack/local.conf
+    sudo chown vagrant:vagrant /opt
+    sudo chown vagrant:vagrant /opt/stack
+    sed -i 's/OVN_BUILD_MODULES=.*/OVN_BUILD_MODULES=False/' /home/vagrant/devstack/local.conf
+    ./stack.sh
+}
