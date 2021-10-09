@@ -1,0 +1,61 @@
+IPS = {central:   '192.168.150.110',
+       central_2: '172.24.4.20',
+       worker:   '192.168.150.111',
+       worker_2: '172.24.4.21',
+      }
+
+RAM = 8000
+VCPUS = 4
+
+Vagrant.configure(2) do |config|
+
+    vm_memory = ENV['VM_MEMORY'] || RAM
+    vm_cpus = ENV['VM_CPUS'] || VCPUS
+
+    # VirtualBox specific configuration
+    config.vm.provider "virtualbox" do |vb|
+        vb.memory = vm_memory
+        vb.cpus = vm_cpus
+        vb.customize ["modifyvm", :id, "--nictype1", "virtio"]
+        vb.customize ["modifyvm", :id, "--nictype2", "virtio"]
+        vb.customize ["modifyvm", :id, "--nictype3", "virtio"]
+    end
+
+    config.ssh.forward_agent = true
+    config.vm.hostname = "ovshost"
+    config.vm.box = "miguel/ubuntu-20.04"
+    #config.vm.box = "focal-server-cloudimg-amd64-vagrant"
+    #config.vm.box_url = "https://cloud-images.ubuntu.com/focal/current/focal-server-cloudimg-amd64-vagrant.box"
+    config.vm.synced_folder './', '/vagrant'
+    config.vm.synced_folder '../utils', '/vagrant/utils'
+    config.vm.synced_folder '../files', '/vagrant/files'
+    config.vm.synced_folder '~/neutron', '/opt/stack/neutron'
+
+    if ENV['OVS_DIR']
+        config.vm.synced_folder ENV['OVS_DIR'], '/home/vagrant/ovs', type: 'rsync'
+    end
+
+    # central as controller node
+    config.vm.define 'central' do |central|
+        central.vm.network 'private_network', ip: IPS[:central]
+        central.vm.network 'private_network', ip: IPS[:central_2]
+        central.vm.hostname = 'central'
+        central.vm.provision :shell do |shell|
+            shell.privileged = false
+            shell.path = 'central.sh'
+            shell.env = IPS
+        end
+    end
+
+    config.vm.define 'worker' do |worker|
+        worker.vm.network 'private_network', ip: IPS[:worker]
+        worker.vm.network 'private_network', ip: IPS[:worker_2]
+        worker.vm.hostname = 'worker'
+        worker.vm.provision :shell do |shell|
+            shell.privileged = false
+            shell.path = 'worker.sh'
+            shell.env = IPS
+        end
+    end
+
+end

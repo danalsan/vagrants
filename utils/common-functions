@@ -139,6 +139,7 @@ function install_devstack_ubuntu {
           cp /opt/stack/neutron/devstack/ovn-compute-local.conf.sample /home/vagrant/devstack/local.conf
        else
           cp /opt/stack/neutron/devstack/ml2-ovs-compute-local.conf.sample /home/vagrant/devstack/local.conf
+          sed -i 's/local_ip=.*/local_ip='${ip}'/' /home/vagrant/devstack/local.conf
        fi
        sed -i 's/SERVICE_HOST=.*/SERVICE_HOST='${service_ip}'/' /home/vagrant/devstack/local.conf
     fi
