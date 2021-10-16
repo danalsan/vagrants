@@ -102,6 +102,18 @@ function install_devstack {
     ./stack.sh
 }
 
+function dvr_setup {
+    sed -i 's/#router_distributed.*/router_distributed=True/' /home/vagrant/devstack/local.conf
+    sed -i 's/#l3_ha.*/l3_ha=True/' /home/vagrant/devstack/local.conf
+    sed -i 's/#enable_distributed_routing.*/enable_distributed_routing=True/' /home/vagrant/devstack/local.conf
+    sed -i 's/#l2_population.*/l2_population=True/' /home/vagrant/devstack/local.conf
+    sed -i 's/#arp_responder.*/arp_responder=True/' /home/vagrant/devstack/local.conf
+    sed -i 's/#agent_mode.*/agent_mode=dvr_snat/' /home/vagrant/devstack/local.conf
+    sed -i '/#\[agent\].*/a availability_zone=nova' /home/vagrant/devstack/local.conf
+    sed -i '/#\[agent\].*/a debug_iptables_rules=True' /home/vagrant/devstack/local.conf
+    sed -i 's/#\[agent\].*/\[agent\]/' /home/vagrant/devstack/local.conf
+}
+
 function ubuntu_setup {
     DEBIAN_FRONTEND=noninteractive sudo apt-get purge -qqy python3-simplejson
     DEBIAN_FRONTEND=noninteractive sudo apt-get purge -qqy python3-pyasn1-modules
@@ -133,6 +145,7 @@ function install_devstack_ubuntu {
           cp /opt/stack/neutron/devstack/ovn-local.conf.sample /home/vagrant/devstack/local.conf
        else
           cp /opt/stack/neutron/devstack/ml2-ovs-local.conf.sample /home/vagrant/devstack/local.conf
+          dvr_setup
        fi
     else
        if [[ "${backend}" == "ovn" ]]; then
@@ -140,6 +153,7 @@ function install_devstack_ubuntu {
        else
           cp /opt/stack/neutron/devstack/ml2-ovs-compute-local.conf.sample /home/vagrant/devstack/local.conf
           sed -i 's/local_ip=.*/local_ip='${ip}'/' /home/vagrant/devstack/local.conf
+          dvr_setup
        fi
        sed -i 's/SERVICE_HOST=.*/SERVICE_HOST='${service_ip}'/' /home/vagrant/devstack/local.conf
     fi
