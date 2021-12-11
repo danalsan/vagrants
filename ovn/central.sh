@@ -11,6 +11,8 @@ source ~/devstack/openrc admin admin
 
 while ! openstack hypervisor list | grep  worker ; do sleep 2; done
 
+# sudo nova-manage cell_v2 discover_hosts --verbose
+
 sudo ovs-vsctl --may-exist add-br br-ex
 sleep 3
 sudo ovs-vsctl br-set-external-id br-ex bridge-id br-ex
