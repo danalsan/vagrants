@@ -71,6 +71,20 @@ function ovn_add_phys_port {
     ip netns exec $name ip route add default via $gw
 }
 
+function add_vlan_device {
+    netns=$1
+    name=$2
+    mac=$3
+    ip=$4
+    mask=$5
+    vid=$6
+
+    ip netns exec $netns ip link add link $netns name $name type vlan id $vid
+    ip netns exec $netns ip link set $name address $mac
+    ip netns exec $netns ip addr add $ip/$mask dev $name
+    ip netns exec $netns ip link set $name up
+}
+
 function install_devstack {
     local type=$1
     local service_ip=$2
