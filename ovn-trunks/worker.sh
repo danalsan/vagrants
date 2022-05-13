@@ -26,7 +26,7 @@ ovs-vsctl add-port br-ex eth2
 
 sleep 3
 
-# Add fake VMs
+# Add fake VMs and containers
 case "$HOSTNAME" in
     worker1)
         ovn_add_phys_port vm1 40:44:00:00:00:01 192.168.0.11 24 192.168.0.1
@@ -34,6 +34,6 @@ case "$HOSTNAME" in
         ;;
     worker2)
         ovn_add_phys_port vm2 40:44:00:00:00:02 192.168.0.12 24 192.168.0.1
-        add_vlan_device vm2 child2 40:44:00:00:00:04 192.168.1.14 24 30
+        add_vlan_device vm2 child2 40:44:00:00:00:04 192.168.1.14 24 50
         ;;
 esac
